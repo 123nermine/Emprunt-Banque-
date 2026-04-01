@@ -1,8 +1,7 @@
 #include <iostream>
-#include <vector>
 #include <cmath>
-#include <iomanip> // pour setprecision
-#include <string>
+#include <vector>
+#include <iomanip>
 using namespace std;
 
 class Emprunt {
@@ -11,12 +10,22 @@ public:
     double tauxAnnuel;
     int nbAnnees;
 
-    Emprunt(double c, double t, int n) : capital(c), tauxAnnuel(t), nbAnnees(n) {}
+    Emprunt(double c, double t, int n) {
+        capital = c;
+        tauxAnnuel = t;
+        nbAnnees = n;
+    }
 
     double calculerMensualite() {
         int nbMois = nbAnnees * 12;
         double tauxMensuel = (tauxAnnuel / 100) / 12;
-        return (capital * tauxMensuel * pow(1 + tauxMensuel, nbMois)) / (pow(1 + tauxMensuel, nbMois) - 1);
+
+        double calcul1 = capital * tauxMensuel;
+        double calcul2 = pow(1 + tauxMensuel, nbMois);
+        double calcul3 = calcul2 - 1;
+
+        return calcul1 * (calcul2 / calcul3);
+        
     }
 };
 
@@ -24,11 +33,13 @@ int main() {
     double capital;
     cout << "Montant du capital : ";
     cin >> capital;
-    // declaration des tableaux
+
+    // Noms des banques
     vector<string> banques = {"Credit Agricole", "BNP Paribas", "LCL", "Credit Mutuel"};
     vector<vector<double>> taux = {{3,4},{3,4},{3,4},{3,4}};
     vector<int> durees = {10, 15, 20};
-
+    int taux1[] = {3,4};
+    // Durées
     // Ajouter des banques dynamiquement
     char ajouter_banque ;
     cout << "Ajouter une banque ? (o/n) : ";
@@ -38,7 +49,7 @@ int main() {
         string nom;
         int nbTaux;
         cout << "Nom de la banque : ";
-        getline(cin, nom);
+        cin >> nom;
         cout << "Nombre de taux : ";
         cin >> nbTaux;
         vector<double> nouveauxTaux(nbTaux);
@@ -51,7 +62,40 @@ int main() {
         cout << "Ajouter une autre banque ? (o/n) : ";
         cin >> ajouter_banque;
     }
+   
 
-    //affichage tableau 
+    
 
+    // En-tête
+   
+    cout << "--------------------------------------------------------\n";
+        // En-tête
+    cout <<"|"<< left << setw(20) << "Taux/Duree";
+    for(int i = 0; i < banques.size(); i++){
+        cout << left << setw(20) << banques[i];
+    }
+    cout << endl;
+    
+    cout << "--------------------------------------------------------------------------\n";
+    
+    // Boucles correctes
+    for(int j = 0; j < 2; j++){          // taux
+        for(int k = 0; k < 3; k++){      // durée
+    
+            // Affiche taux + durée (ligne)
+            cout << left << setw(10) << (to_string(taux1[j]) + "%")<< setw(10) << (to_string(durees[k]) + " ans")<<"|";
+    
+            // Colonnes = banques
+            for(int i = 0; i < banques.size(); i++){
+    
+                Emprunt e(capital, taux[i][j], durees[k]);
+    
+                cout << left << setw(20)<< fixed << setprecision(2)<< e.calculerMensualite()<<"|";
+            }
+    
+            cout << endl;
+        }
+    }
+    
+    return 0;
 }

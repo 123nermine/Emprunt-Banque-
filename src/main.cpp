@@ -49,7 +49,7 @@ int main() {
         banques.push_back(nom);
         taux.push_back(nouveauxTaux);
         cout << "Ajouter une autre banque ? (o/n) : ";
-        cin >> ajouter;
+        cin >> ajouter_banque;
     }
 
     //affichage tableau 

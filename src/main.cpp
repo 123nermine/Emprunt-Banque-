@@ -27,7 +27,18 @@ public:
         return calcul1 * (calcul2 / calcul3);
         
     }
+    
+    
 };
+
+// Fonction pour afficher une ligne de séparateurs
+void printSeparateur(size_t nbColonnes, int largeur) {
+    for(size_t i=0;i<nbColonnes;i++){
+        cout << "+";
+        for(int j=0;j<largeur;j++) cout << "-";
+    }
+    cout << "+\n";
+}
 
 int main() {
     double capital;
@@ -64,33 +75,43 @@ int main() {
     }
    
 
-    
+    int largeur = 18;
 
+    printSeparateur(banques.size()+1, largeur);
+
+    cout << left << setw(largeur-1) << "Taux/Duree";
+
+    for(auto &b: banques)
+
+        cout << left << setw(largeur-1) << b;
+
+    cout << "|\n";
+
+    printSeparateur(banques.size()+1, largeur);
+ 
     // En-tête
    
-    cout << "--------------------------------------------------------\n";
         // En-tête
-    cout <<"|"<< left << setw(20) << "Taux/Duree";
+    cout << left << setw(20) << "Taux/Duree";
     for(int i = 0; i < banques.size(); i++){
-        cout << left << setw(20) << banques[i];
+        cout << left << setw(20) <<banques[i];
     }
     cout << endl;
     
-    cout << "--------------------------------------------------------------------------\n";
-    
+   
     // Boucles correctes
     for(int j = 0; j < 2; j++){          // taux
         for(int k = 0; k < 3; k++){      // durée
     
             // Affiche taux + durée (ligne)
-            cout << left << setw(10) << (to_string(taux1[j]) + "%")<< setw(10) << (to_string(durees[k]) + " ans")<<"|";
+            cout << left << setw(10) << (to_string(taux1[j]) + "%")<< setw(10) << (to_string(durees[k]) + " ans");
     
             // Colonnes = banques
             for(int i = 0; i < banques.size(); i++){
     
                 Emprunt e(capital, taux[i][j], durees[k]);
     
-                cout << left << setw(20)<< fixed << setprecision(2)<< e.calculerMensualite()<<"|";
+                cout << left << setw(20)<< fixed << setprecision(2)<< e.calculerMensualite();
             }
     
             cout << endl;

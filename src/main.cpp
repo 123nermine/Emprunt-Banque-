@@ -4,6 +4,7 @@
 #include <iomanip>
 using namespace std;
 
+// créer la class Emprunt
 class Emprunt {
 public:
     double capital;
@@ -15,6 +16,8 @@ public:
         tauxAnnuel = t;
         nbAnnees = n;
     }
+
+    // méthode de calculs
 
     double calculerMensualite() {
         int nbMois = nbAnnees * 12;
@@ -31,6 +34,7 @@ public:
     
 };
 
+
 void printCell(string contenu, int largeur) {
     cout << "| " << left << setw(largeur-2) << contenu;
 }
@@ -44,6 +48,8 @@ void printHeader(vector<string>& banques, int largeur) {
 
     cout << "|\n";
 }
+
+
 // Fonction pour afficher une ligne de séparateurs
 void printSeparateur(size_t nbColonnes, int largeur) {
     for(size_t i=0;i<nbColonnes;i++){
@@ -52,6 +58,8 @@ void printSeparateur(size_t nbColonnes, int largeur) {
     }
     cout << "+\n";
 }
+
+// affichage des séparateurs de lignes 
 
 void printLigne(double capital, vector<string>& banques,
                 vector<vector<double>>& taux, vector<int>& durees,
@@ -74,18 +82,23 @@ void printLigne(double capital, vector<string>& banques,
 
     cout << "|\n";
 }
+
 int main() {
+    // declaration des attributs
     double capital;
     cout << "Montant du capital : ";
     cin >> capital;
 
     // Noms des banques
     vector<string> banques = {"Credit Agricole", "BNP Paribas", "LCL", "Credit Mutuel"};
+    // 2 taux pour chaque banque 
     vector<vector<double>> taux = {{3,4},{3,4},{3,4},{3,4}};
+    // 3 durées pour chaque banque 
     vector<int> durees = {10, 15, 20};
     int taux1[] = {3,4};
-    // Durées
+  
     // Ajouter des banques dynamiquement
+    
     char ajouter_banque ;
     cout << "Ajouter une banque ? (o/n) : ";
     cin >> ajouter_banque;
@@ -108,15 +121,14 @@ int main() {
         cin >> ajouter_banque;
     }
    
-
+    // initialisation d'un max de colonnes 
     int largeur = 18;
-
+    // appel des fonctions 
     printSeparateur(banques.size()+1, largeur);
-    
     printHeader(banques, largeur);
-    
     printSeparateur(banques.size()+1, largeur);
     
+    // parcours du tableau avec les separateurs de l'entete et de lignes
     for(int j = 0; j < taux[0].size(); j++){
         for(int k = 0; k < durees.size(); k++){
     

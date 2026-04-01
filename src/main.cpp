@@ -31,15 +31,49 @@ public:
     
 };
 
+void printCell(string contenu, int largeur) {
+    cout << "| " << left << setw(largeur-2) << contenu;
+}
+
+void printHeader(vector<string>& banques, int largeur) {
+    printCell("Taux/Duree", largeur);
+
+    for(auto &b : banques) {
+        printCell(b, largeur);
+    }
+
+    cout << "|\n";
+}
 // Fonction pour afficher une ligne de séparateurs
 void printSeparateur(size_t nbColonnes, int largeur) {
     for(size_t i=0;i<nbColonnes;i++){
-        cout << "+";
+        
         for(int j=0;j<largeur;j++) cout << "-";
     }
     cout << "+\n";
 }
 
+void printLigne(double capital, vector<string>& banques,
+                vector<vector<double>>& taux, vector<int>& durees,
+                int j, int k, int largeur) {
+
+    string td = to_string((int)taux[0][j]) + "% " + to_string(durees[k]) + " ans";
+    printCell(td, largeur);
+
+    for(int i = 0; i < banques.size(); i++) {
+
+        if(j < taux[i].size()) {
+            Emprunt e(capital, taux[i][j], durees[k]);
+
+            string val = to_string((int)e.calculerMensualite());
+            printCell(val, largeur);
+        } else {
+            printCell("-", largeur);
+        }
+    }
+
+    cout << "|\n";
+}
 int main() {
     double capital;
     cout << "Montant du capital : ";
@@ -78,43 +112,17 @@ int main() {
     int largeur = 18;
 
     printSeparateur(banques.size()+1, largeur);
-
-    cout << left << setw(largeur-1) << "Taux/Duree";
-
-    for(auto &b: banques)
-
-        cout << left << setw(largeur-1) << b;
-
-    cout << "|\n";
-
+    
+    printHeader(banques, largeur);
+    
     printSeparateur(banques.size()+1, largeur);
- 
-    // En-tête
-   
-        // En-tête
-    cout << left << setw(20) << "Taux/Duree";
-    for(int i = 0; i < banques.size(); i++){
-        cout << left << setw(20) <<banques[i];
-    }
-    cout << endl;
     
-   
-    // Boucles correctes
-    for(int j = 0; j < 2; j++){          // taux
-        for(int k = 0; k < 3; k++){      // durée
+    for(int j = 0; j < taux[0].size(); j++){
+        for(int k = 0; k < durees.size(); k++){
     
-            // Affiche taux + durée (ligne)
-            cout << left << setw(10) << (to_string(taux1[j]) + "%")<< setw(10) << (to_string(durees[k]) + " ans");
+            printLigne(capital, banques, taux, durees, j, k, largeur);
     
-            // Colonnes = banques
-            for(int i = 0; i < banques.size(); i++){
-    
-                Emprunt e(capital, taux[i][j], durees[k]);
-    
-                cout << left << setw(20)<< fixed << setprecision(2)<< e.calculerMensualite();
-            }
-    
-            cout << endl;
+            printSeparateur(banques.size()+1, largeur);
         }
     }
     

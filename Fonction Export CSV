@@ -1,0 +1,50 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <iomanip>
+
+using namespace std;
+
+void ajouterResultatCSV(string groupe,
+                        double capital,
+                        string banque,
+                        double taux,
+                        int duree,
+                        double resultat) {
+    ofstream file("banques.csv", ios::app);
+
+    if (!file) {
+        cerr << "Erreur : impossible d'ouvrir banques.csv" << endl;
+        return;
+    }
+
+    // Si le fichier est vide, on écrit l'en-tête une seule fois
+    if (file.tellp() == 0) {
+        file << "GROUPE;CAPITAL;BANQUE;TAUX;DUREE;RESULTAT\n";
+    }
+
+    file << groupe << ";"
+         << fixed << setprecision(2) << capital << ";"
+         << banque << ";"
+         << fixed << setprecision(2) << taux << ";"
+         << duree << ";"
+         << fixed << setprecision(2) << resultat << "\n";
+
+    file.close();
+}
+
+int main() {
+    // Exemple de simulation
+    string groupe = "Lucas_Ines";
+    double capital = 50000;
+    string banque = "BP";
+    double taux = 3;
+    int duree = 10;
+    double resultat = 482.80;
+
+    ajouterResultatCSV(groupe, capital, banque, taux, duree, resultat);
+
+    cout << "Resultat ajoute dans banques.csv" << endl;
+
+    return 0;
+}

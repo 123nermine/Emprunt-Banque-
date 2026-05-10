@@ -1,21 +1,55 @@
-
-
-#include <iostream>
-#include <fstream>      // pour l'export CSV
-#include <sstream>      // pour la mise en forme
-#include <string>
-#include <vector>
-#include <cmath>        // pour pow()
-#include <iomanip>      // pour setw, setprecision
-#include <limits>       // pour numeric_limits (vidage du buffer)
+#include <iostream>   // Gestion des entrées/sorties
+#include <fstream>    // Gestion des fichiers
+#include <sstream>
+#include <string>     // Utilisation des chaînes de caractères
+#include <vector>     // Utilisation des tableaux dynamiques
+#include <cmath>      // Fonctions mathématiques (pow)
+#include <iomanip>    // Manipulation de l'affichage
+#include <limits>     // Gestion des limites
 using namespace std;
 
 
 /* ============================================================================
- *  CLASSE 1 : Utilisateur
- *  ----------------------------------------------------------------------------
- *  Représente le client qui souhaite simuler un emprunt.
- *  Stocke ses coordonnées (nom, prénom, email, téléphone).
+ *  FONCTION D'EXPORT CSV (TEST ET INTEGRATION LE CODE DE YACINE°
+ *  Ajoute les résultats dans le fichier banques.csv
+ * ========================================================================== */
+void ajouterResultatCSV(string groupe,
+                        double capital,
+                        string banque,
+                        double taux,
+                        int duree,
+                        double resultat) {
+
+    // Ouverture du fichier en mode ajout
+    ofstream file("banques.csv", ios::app);
+
+    // Vérification ouverture fichier
+    if (!file) {
+        cerr << "Erreur : impossible d'ouvrir banques.csv" << endl;
+        return;
+    }
+
+    // Si le fichier est vide → écrire l'entête
+    if (file.tellp() == 0) {
+        file << "GROUPE;CAPITAL;BANQUE;TAUX;DUREE;RESULTAT\n";
+    }
+
+    // Écriture des données
+    file << groupe << ";"
+         << fixed << setprecision(2) << capital << ";"
+         << banque << ";"
+         << fixed << setprecision(2) << taux << ";"
+         << duree << ";"
+         << fixed << setprecision(2) << resultat << "\n";
+
+    // Fermeture du fichier
+    file.close();
+}
+
+
+/* ============================================================================
+ *  CLASSE Utilisateur
+ *  Stocke les informations utilisateur
  * ========================================================================== */
 class Utilisateur {
 private:
@@ -25,10 +59,13 @@ private:
     string telephone;
 
 public:
+
+    // Constructeur par défaut
     Utilisateur() : nom(""), prenom(""), email(""), telephone("") {}
 
-    // Saisie interactive (1ère lecture du programme : buffer propre)
+    // Saisie des informations utilisateur
     void saisir() {
+
         cout << "\n========== COORDONNEES DE L'UTILISATEUR ==========\n";
 
         cout << "Nom       : ";
@@ -44,7 +81,7 @@ public:
         getline(cin, telephone);
     }
 
-    // Accesseurs
+    // Getters
     string getNom()       const { return nom; }
     string getPrenom()    const { return prenom; }
     string getEmail()     const { return email; }
@@ -53,12 +90,8 @@ public:
 
 
 /* ============================================================================
- *  CLASSE 2 : Compte
- *  ----------------------------------------------------------------------------
- *  Représente un emprunt (un "compte" de prêt).
- *  Calcule la mensualité à partir du capital, du taux et de la durée.
- *  Formule : M = C * t * (1+t)^n / ((1+t)^n - 1)
- *      C = capital, t = taux mensuel, n = nombre de mois
+ *  CLASSE Compte
+ *  Gère le calcul des mensualités
  * ========================================================================== */
 class Compte {
 private:
@@ -67,22 +100,32 @@ private:
     int    nbAnnees;
 
 public:
+
+    // Constructeur
     Compte(double c, double t, int n)
         : capital(c), tauxAnnuel(t), nbAnnees(n) {}
 
+    // Calcul de la mensualité
     double calculerMensualite() const {
-        int    nbMois      = nbAnnees * 12;
+
+        // Nombre total de mois
+        int nbMois = nbAnnees * 12;
+
+        // Taux mensuel
         double tauxMensuel = (tauxAnnuel / 100.0) / 12.0;
-        double facteur     = pow(1 + tauxMensuel, nbMois);
+
+        // Calcul du facteur
+        double facteur = pow(1 + tauxMensuel, nbMois);
+
+        // Formule de mensualité
         return capital * tauxMensuel * facteur / (facteur - 1);
     }
 };
 
 
 /* ============================================================================
- *  CLASSE 3 : Banque
- *  ----------------------------------------------------------------------------
- *  Représente une banque : son nom + sa liste de taux proposés.
+ *  CLASSE Banque
+ *  Contient les informations d'une banque
  * ========================================================================== */
 class Banque {
 private:
@@ -90,225 +133,236 @@ private:
     vector<double> taux;
 
 public:
-    Banque(const string& n, const vector<double>& t) : nom(n), taux(t) {}
 
-    string         getNom()  const { return nom; }
+    // Constructeur
+    Banque(const string& n, const vector<double>& t)
+        : nom(n), taux(t) {}
+
+    // Getters
+    string getNom() const { return nom; }
+
     vector<double> getTaux() const { return taux; }
-    size_t         nbTaux()  const { return taux.size(); }
 
-    // Renvoie le taux à l'index donné, ou -1 si hors limite
+    // Retourne le nombre de taux
+    size_t nbTaux() const { return taux.size(); }
+
+    // Retourne un taux selon son indice
     double getTauxAt(size_t i) const {
+
+        // Vérification indice valide
         return (i < taux.size()) ? taux[i] : -1.0;
     }
 };
 
 
 /* ============================================================================
- *  CLASSE 4 : Affichage
- *  ----------------------------------------------------------------------------
- *  Gère la présentation des résultats :
- *      - Affichage console formaté (style identique au code original)
- *      - Export CSV
+ *  CLASSE Affichage
+ *  Gère l'affichage du tableau
  * ========================================================================== */
 class Affichage {
 private:
-    int largeur;   // largeur d'une colonne du tableau (= 18 comme l'original)
+    int largeur;
 
-    // ---------- Helpers privés ----------
-
-    // Affiche une cellule avec alignement à gauche (style original)
+    // Affichage d'une cellule
     void printCell(const string& contenu) const {
-        cout << "| " << left << setw(largeur - 2) << contenu;
+
+        cout << "| "
+             << left
+             << setw(largeur - 2)
+             << contenu;
     }
 
-    // Affiche une ligne de séparation horizontale (style original)
-    // Reproduit exactement la fonction printSeparateur() du code original
+    // Affichage des séparateurs
     void printSeparateur(size_t nbColonnes) const {
+
         for (size_t i = 0; i < nbColonnes; i++) {
-            for (int j = 0; j < largeur; j++) cout << "-";
+
+            for (int j = 0; j < largeur; j++)
+                cout << "-";
         }
+
         cout << "+\n";
     }
 
-    // En-tête du tableau (libellé + noms des banques)
+    // Affichage de l'entête
     void printHeader(const vector<Banque>& banques) const {
+
         printCell("Banque");
-        for (const auto& b : banques) printCell(b.getNom());
+
+        for (const auto& b : banques)
+            printCell(b.getNom());
+
         cout << "|\n";
     }
 
-    // Trouve le nombre maximum de taux parmi toutes les banques
+    // Recherche du nombre maximum de taux
     size_t maxNbTaux(const vector<Banque>& banques) const {
+
         size_t maxT = 0;
+
         for (const auto& b : banques)
-            if (b.nbTaux() > maxT) maxT = b.nbTaux();
+
+            if (b.nbTaux() > maxT)
+                maxT = b.nbTaux();
+
         return maxT;
     }
 
-    // ---------- Affichage des 3 lignes (Taux / Durée / Mensualité) ----------
-    // Reproduit fidèlement la structure originale de printLigne()
+    // Affichage d'un bloc du tableau
     void printBloc(double capital,
                    const vector<Banque>& banques,
                    const vector<int>& durees,
                    size_t j, size_t k) const
     {
-        // --- Ligne 1 : Taux ---
+        // Ligne taux
         printCell("Taux");
+
         for (const auto& b : banques) {
+
             if (j < b.nbTaux()) {
-                string t = to_string((int)b.getTauxAt(j)) + "%";
+
+                string t =
+                    to_string((int)b.getTauxAt(j)) + "%";
+
                 printCell(t);
+
             } else {
+
                 printCell("-");
             }
         }
+
         cout << "|\n";
+
         printSeparateur(banques.size() + 1);
 
-        // --- Ligne 2 : Duree ---
+        // Ligne durée
         printCell("Duree");
+
         for (size_t i = 0; i < banques.size(); i++) {
-            string d = to_string(durees[k]) + " ans";
+
+            string d =
+                to_string(durees[k]) + " ans";
+
             printCell(d);
         }
+
         cout << "|\n";
+
         printSeparateur(banques.size() + 1);
 
-        // --- Ligne 3 : Mensualite ---
+        // Ligne mensualité
         printCell("Mensualite");
+
         for (const auto& b : banques) {
+
             if (j < b.nbTaux()) {
-                Compte c(capital, b.getTauxAt(j), durees[k]);
-                string val = to_string((int)c.calculerMensualite());
+
+                // Création du compte
+                Compte c(
+                    capital,
+                    b.getTauxAt(j),
+                    durees[k]
+                );
+
+                // Calcul mensualité
+                string val =
+                    to_string((int)c.calculerMensualite());
+
                 printCell(val);
+
             } else {
+
                 printCell("-");
             }
         }
+
         cout << "|\n";
+
         printSeparateur(banques.size() + 1);
     }
 
 public:
-    Affichage(int l = 18) : largeur(l) {}   // largeur 18 comme l'original
 
-    // ---------- Affichage console (style original) ----------
+    // Constructeur
+    Affichage(int l = 18) : largeur(l) {}
+
+    // Affichage complet du tableau
     void afficherTableau(double capital,
                          const vector<Banque>& banques,
                          const vector<int>& durees) const
     {
+        // Nombre de colonnes
         size_t nbCols = banques.size() + 1;
-        size_t maxT   = maxNbTaux(banques);
 
-        printSeparateur(nbCols);
-        printHeader(banques);
-        printSeparateur(nbCols);
-
-        // Pour chaque taux (j) et chaque durée (k) : afficher un bloc 3 lignes
-        for (size_t j = 0; j < maxT; j++) {
-            for (size_t k = 0; k < durees.size(); k++) {
-                printBloc(capital, banques, durees, j, k);
-            }
-        }
-    }
-
-    // ---------- Export CSV ----------
-    // Génère un fichier .csv contenant :
-    //   - les coordonnées de l'utilisateur
-    //   - le tableau des mensualités sous forme tabulaire
-    void exporterCSV(const string& nomFichier,
-                     const Utilisateur& user,
-                     double capital,
-                     const vector<Banque>& banques,
-                     const vector<int>& durees) const
-    {
-        ofstream fichier(nomFichier);
-        if (!fichier.is_open()) {
-            cout << "\n[ERREUR] Impossible de creer le fichier "
-                 << nomFichier << "\n";
-            return;
-        }
-
-        // --- Section 1 : informations utilisateur ---
-        fichier << "INFORMATIONS UTILISATEUR\n";
-        fichier << "Nom;"       << user.getNom()       << "\n";
-        fichier << "Prenom;"    << user.getPrenom()    << "\n";
-        fichier << "Email;"     << user.getEmail()     << "\n";
-        fichier << "Telephone;" << user.getTelephone() << "\n";
-        fichier << "Capital emprunte (EUR);" << capital << "\n\n";
-
-        // --- Section 2 : tableau des mensualités ---
-        fichier << "TABLEAU DES MENSUALITES (EUR)\n";
-        fichier << "Taux;Duree (ans)";
-        for (const auto& b : banques) fichier << ";" << b.getNom();
-        fichier << "\n";
-
+        // Nombre max de taux
         size_t maxT = maxNbTaux(banques);
+
+        printSeparateur(nbCols);
+
+        printHeader(banques);
+
+        printSeparateur(nbCols);
+
+        // Parcours des taux
         for (size_t j = 0; j < maxT; j++) {
+
+            // Parcours des durées
             for (size_t k = 0; k < durees.size(); k++) {
 
-                // Taux de référence pour la ligne (1ère banque ayant ce taux)
-                double tauxRef = -1;
-                for (const auto& b : banques)
-                    if (j < b.nbTaux()) { tauxRef = b.getTauxAt(j); break; }
-
-                if (tauxRef >= 0)
-                    fichier << fixed << setprecision(2) << tauxRef << "%";
-                else
-                    fichier << "Taux " << (j + 1);
-
-                fichier << ";" << durees[k];
-
-                for (const auto& b : banques) {
-                    if (j < b.nbTaux()) {
-                        Compte c(capital, b.getTauxAt(j), durees[k]);
-                        fichier << ";" << fixed << setprecision(2)
-                                << c.calculerMensualite();
-                    } else {
-                        fichier << ";-";
-                    }
-                }
-                fichier << "\n";
+                printBloc(
+                    capital,
+                    banques,
+                    durees,
+                    j,
+                    k
+                );
             }
         }
-
-        fichier.close();
-        cout << "\n[OK] Fichier exporte : " << nomFichier << "\n";
     }
 };
 
 
 /* ============================================================================
- *  FONCTION : ajouterBanquesDynamiquement
- *  ----------------------------------------------------------------------------
- *  Permet à l'utilisateur d'ajouter autant de banques qu'il le souhaite.
- *  getline() est utilisé pour gérer les noms contenant des espaces
- *  (ex: "Credit Agricole", "Societe Generale").
+ *  AJOUT DYNAMIQUE DE BANQUES
  * ========================================================================== */
 void ajouterBanquesDynamiquement(vector<Banque>& banques) {
+
     char choix;
+
     cout << "\nAjouter une banque ? (o/n) : ";
     cin >> choix;
 
     while (choix == 'o' || choix == 'O') {
+
         string nom;
         int    nbTaux;
 
-        // Vide le \n laissé par cin >> avant getline
+        // Nettoyage du buffer
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
+        // Nom banque
         cout << "Nom de la banque : ";
-        getline(cin, nom);          // <-- gère les espaces
+        getline(cin, nom);
 
+        // Nombre de taux
         cout << "Nombre de taux   : ";
         cin >> nbTaux;
 
+        // Création tableau des taux
         vector<double> nouveauxTaux(nbTaux);
+
+        // Saisie des taux
         for (int i = 0; i < nbTaux; i++) {
-            cout << "  Taux " << (i + 1) << " (en %) : ";
+
+            cout << "  Taux "
+                 << (i + 1)
+                 << " (en %) : ";
+
             cin >> nouveauxTaux[i];
         }
 
+        // Ajout banque dans le vector
         banques.push_back(Banque(nom, nouveauxTaux));
 
         cout << "\nAjouter une autre banque ? (o/n) : ";
@@ -321,41 +375,91 @@ void ajouterBanquesDynamiquement(vector<Banque>& banques) {
  *  PROGRAMME PRINCIPAL
  * ========================================================================== */
 int main() {
+
     cout << "*****************************************************\n";
     cout << "*       SIMULATEUR D'EMPRUNT BANCAIRE - v1.0        *\n";
     cout << "*****************************************************\n";
 
-    // 1) Saisie des coordonnées de l'utilisateur
+    // Création utilisateur
     Utilisateur user;
+
+    // Saisie utilisateur
     user.saisir();
 
-    // 2) Saisie du capital
+    // Capital à emprunter
     double capital;
+
     cout << "\nMontant du capital a emprunter (EUR) : ";
+
     cin >> capital;
 
-    // 3) Banques par défaut
+    // Liste des banques
     vector<Banque> banques = {
+
         Banque("CA",  {3.0, 4.0}),
         Banque("BNP", {3.0, 4.0}),
         Banque("LCL", {3.0, 4.0}),
         Banque("CM",  {3.0, 4.0})
     };
 
-    // 4) Durées proposées (en années)
+    // Liste des durées
     vector<int> durees = {10, 15, 20};
 
-    // 5) Ajout dynamique de banques supplémentaires
+    // Ajout de banques
     ajouterBanquesDynamiquement(banques);
 
-    // 6) Affichage du tableau (structure 3 lignes par bloc, style original)
-    Affichage aff(18);   // largeur de colonne = 18 caractères (comme l'original)
+    // Création objet affichage
+    Affichage aff(18);
+
+    // Affichage tableau
     aff.afficherTableau(capital, banques, durees);
 
-    // 7) Export CSV automatique
-    string nomFichier = "simulation_" + user.getNom() + ".csv";
-    aff.exporterCSV(nomFichier, user, capital, banques, durees);
+    /* ==========================================================
+     * EXPORT CSV
+     * ======================================================== */
 
-    cout << "\nMerci " << user.getPrenom() << " ! Simulation terminee.\n";
+    // Création du groupe utilisateur
+    string groupe =
+        user.getNom() + "_" + user.getPrenom();
+
+    // Parcours des banques
+    for (const auto& b : banques) {
+
+        // Parcours des taux
+        for (size_t j = 0; j < b.nbTaux(); j++) {
+
+            // Parcours des durées
+            for (size_t k = 0; k < durees.size(); k++) {
+
+                // Création du compte
+                Compte c(
+                    capital,
+                    b.getTauxAt(j),
+                    durees[k]
+                );
+
+                // Calcul mensualité
+                double mensualite =
+                    c.calculerMensualite();
+
+                // Export CSV
+                ajouterResultatCSV(
+                    groupe,
+                    capital,
+                    b.getNom(),
+                    b.getTauxAt(j),
+                    durees[k],
+                    mensualite
+                );
+            }
+        }
+    }
+
+    cout << "\n[OK] Donnees exportees dans banques.csv\n";
+
+    cout << "\nMerci "
+         << user.getPrenom()
+         << " ! Simulation terminee.\n";
+
     return 0;
 }

@@ -331,7 +331,7 @@ Ce projet illustre les notions suivantes du **C++** et de la **programmation ori
 ---
 
 ## 👤 Auteur
-  Nermine LAMMARI et Gregan 
+  Nermine LAMMARI et Gregan RANDRIAMAHNINA
 
 ---
 
